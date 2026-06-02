@@ -5,13 +5,12 @@ import com.practice.CodingShuttles.entity.EmployeeEntity;
 import com.practice.CodingShuttles.repository.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -25,9 +24,9 @@ public class EmployeeService {
     }
 
 
-    public EmployeeDTO getEmployeeById(Long employeeId) {
-        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).orElse(null);
-        return modelMapper.map(employeeEntity, EmployeeDTO.class);
+    public Optional<EmployeeDTO> getEmployeeById(Long employeeId) {
+        return employeeRepository.findById(employeeId)
+                .map(employeeEntity -> modelMapper.map(employeeEntity, EmployeeDTO.class));
     }
 
     public List<EmployeeDTO> getAllEmployees() {
@@ -51,10 +50,30 @@ public class EmployeeService {
         return modelMapper.map(savedEmployeeEntity, EmployeeDTO.class);
     }
 
+    public boolean isExistingEmployeeId(Long employeeId) {
+        return employeeRepository.existsById(employeeId);
+    }
+
     public boolean deleteEmployeeById(Long employeeId) {
-        boolean exists = employeeRepository.existsById(employeeId);
+        boolean exists = isExistingEmployeeId(employeeId);
         if (!exists) return false;
         employeeRepository.deleteById(employeeId);
         return true;
+    }
+
+    public EmployeeDTO updatePartialEmployeeById(Long employeeId, Map<String, Object> updates) {
+        boolean exists = isExistingEmployeeId(employeeId);
+        if (!exists) return null;
+        EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).get();
+        updates.forEach((filed, value) -> {
+            Field fieldToBeUpdated = ReflectionUtils.findField(EmployeeEntity.class, filed);
+
+            if (fieldToBeUpdated != null) {
+                fieldToBeUpdated.setAccessible(true);
+                ReflectionUtils.setField(fieldToBeUpdated, employeeEntity, value);
+            }
+        });
+
+        return modelMapper.map(employeeRepository.save(employeeEntity), EmployeeDTO.class);
     }
 }
