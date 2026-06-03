@@ -4,6 +4,7 @@ import com.practice.CodingShuttles.dto.EmployeeDTO;
 import com.practice.CodingShuttles.entity.EmployeeEntity;
 import com.practice.CodingShuttles.repository.EmployeeRepository;
 import com.practice.CodingShuttles.service.EmployeeService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,14 +39,14 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody EmployeeDTO employeeDTO) {
+    public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody @Valid EmployeeDTO employeeDTO) {
         EmployeeDTO savedEmployee = employeeService.createNewEmployee(employeeDTO);
         return new ResponseEntity<>(savedEmployee, HttpStatus.CREATED);
     }
 
     @PutMapping("/{employeeId}")
     public ResponseEntity<EmployeeDTO> updateEmployeeById(@PathVariable Long employeeId,
-                                          @RequestBody EmployeeDTO employeeDTO) {
+                                          @RequestBody @Valid EmployeeDTO employeeDTO) {
         return ResponseEntity.ok(employeeService.updateEmployeeById(employeeId, employeeDTO));
     }
 
