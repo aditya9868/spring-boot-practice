@@ -27,11 +27,11 @@ public class EmployeeDTO {
     private String email;
 
     @NotNull(message = "Age of the employee can not be blank.")
-    @Max(value = 18, message = "Age of Employee cannot be less than 18.")
+    @Min(value = 18, message = "Age of Employee cannot be less than 18.")
     @Max(value = 80, message = "Age of Employee cannot be greater than 80.")
     private Integer age;
 
-    @@NotBlank(message = "Role of the employee cannot be blank")
+    @NotBlank(message = "Role of the employee cannot be blank")
 //    @Pattern(regexp = "^(USER|ADMIN)$", message = "Role of employee can either be USER or ADMIN.")
     @EmployeeRoleValidation
     private String role;
@@ -47,7 +47,7 @@ public class EmployeeDTO {
     private LocalDate dateOfJoining;
 
     @AssertTrue(message = "Employee should be active.")
-    @JsonProperty("isActive")
-    private Boolean isActive;
+//    @JsonProperty("isActive")
+    private Boolean active;
 
 }

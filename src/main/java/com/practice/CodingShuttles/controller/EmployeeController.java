@@ -2,6 +2,7 @@ package com.practice.CodingShuttles.controller;
 
 import com.practice.CodingShuttles.dto.EmployeeDTO;
 import com.practice.CodingShuttles.entity.EmployeeEntity;
+import com.practice.CodingShuttles.exceptions.ResourceNotFoundException;
 import com.practice.CodingShuttles.repository.EmployeeRepository;
 import com.practice.CodingShuttles.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -32,21 +33,20 @@ public class EmployeeController {
 
     @GetMapping("/{employeeId}")
     public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable Long employeeId) {
-        Optional<EmployeeDTO> employeeDTO = employeeService.getEmployeeById(employeeId);
-        return employeeDTO.
+        Optional<EmployeeDTO> employeeById = employeeService.getEmployeeById(employeeId);
+        return employeeById.
                 map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + employeeId));
     }
 
     @PostMapping
     public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody @Valid EmployeeDTO employeeDTO) {
-        EmployeeDTO savedEmployee = employeeService.createNewEmployee(employeeDTO);
-        return new ResponseEntity<>(savedEmployee, HttpStatus.CREATED);
+        return new ResponseEntity<>(employeeService.createNewEmployee(employeeDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{employeeId}")
     public ResponseEntity<EmployeeDTO> updateEmployeeById(@PathVariable Long employeeId,
-                                          @RequestBody @Valid EmployeeDTO employeeDTO) {
+                                                          @RequestBody @Valid EmployeeDTO employeeDTO) {
         return ResponseEntity.ok(employeeService.updateEmployeeById(employeeId, employeeDTO));
     }
 
@@ -59,7 +59,7 @@ public class EmployeeController {
 
     @PatchMapping("/{employeeId}")
     public ResponseEntity<EmployeeDTO> updatePartialEmployeeById(@PathVariable Long employeeId,
-                                                 @RequestBody Map<String, Object> updates) {
+                                                                 @RequestBody Map<String, Object> updates) {
         EmployeeDTO employeeDTO = employeeService.updatePartialEmployeeById(employeeId, updates);
         if (employeeDTO == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(employeeDTO);
